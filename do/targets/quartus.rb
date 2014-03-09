@@ -1,10 +1,6 @@
 require 'pp'
 
 class QuartusBuild < Target
-#   QSF_TEMPLATE = "
-# set_global_assignment -name FAMILY "#{family}"
-# set_global_assignment -name DEVICE #{device}
-# "
   def initialize(options)
     super(options, 'qbuild')
 
@@ -88,6 +84,18 @@ class QuartusBlast < Target
 end
 
 def quartus_init(options, targets)
-  targets.push(QuartusBuild.new options)
-  targets.push(QuartusBlast.new options)
+  begin
+    targets.push(QuartusBuild.new options)
+  rescue Exception => e
+    puts "Failed to load qbuild target"
+    # puts e.message
+    # puts e.backtrace.inspect
+  end
+  begin
+    targets.push(QuartusBlast.new options)
+  rescue Exception => e
+    puts "Failed to load qblast target"
+    # puts e.message
+    # puts e.backtrace.inspect
+  end
 end
