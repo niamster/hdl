@@ -22,6 +22,24 @@ class QuartusBuild < Target
     @device = @options.meta[:target][:device]
   end
 
+  def do_pin(file, pin, entity)
+    if pin.kind_of? String
+      file.puts("set_location_assignment PIN_#{pin} -to #{entity}")
+      return
+    end
+    file.puts("set_location_assignment PIN_#{pin[:pad]} -to #{entity}")
+    file.puts("set_instance_assignment -name IO_STANDARD \"#{pin[:voltage]}\" -to #{entity}")
+    if pin[:current]
+      if pin[:current] == :max
+        current = "MAXIMUM CURRENT"
+      else
+        current = pin[:current]
+      end
+      file.puts("set_instance_assignment -name CURRENT_STRENGTH_NEW \"#{current}\" -to #{entity}")
+    end
+  end
+  private :do_pin
+
   def do(what)
     File.open(@qsf, "w+") do |qsf|
       qsf.puts("set_global_assignment -name FAMILY \"#{@family}\"")
@@ -35,11 +53,11 @@ class QuartusBuild < Target
           if pin.kind_of? Array
             i = 0
             pin.each do |p|
-              qsf.puts("set_location_assignment PIN_#{p} -to #{entity}[#{i}]")
+              do_pin(qsf, p, "#{entity}[#{i}]")
               i += 1
             end
           else
-            qsf.puts("set_location_assignment PIN_#{pin} -to #{entity}")
+            do_pin(qsf, pin, entity)
           end
         end
       end
