@@ -11,11 +11,15 @@ class IverilogSim < Target
     @vvp = project_file(".vvp")
     @vcd = project_file(".vcd")
     @provides = [@vvp, @vcd]
+
+    @sim = @options.meta[:sim]
   end
 
   def do(what)
+    extra = []
+    extra += ['-s', @sim] if @sim
     Utils.run("iverilog",
-        param=['-o', @vvp] + @files,
+        param=['-o', @vvp] + extra + @files,
         pwd: @build_root, silent: @silent)
     Utils.run("vvp",
         param=[@vvp],
