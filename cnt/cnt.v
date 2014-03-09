@@ -20,9 +20,9 @@ module cnt(clk, top, cnt, i);
       end else
         i <= 1'b0;
    end
-endmodule // cnt
+endmodule
 
-module cntClk(clk);
+module cnt_sim_clk(clk);
    output reg clk;
 
    initial begin
@@ -31,9 +31,9 @@ module cntClk(clk);
          clk = #1 !clk;
       end
    end
-endmodule // cntClk
+endmodule
 
-module test;
+module cnt_sim;
    wire clk;
    wire i;
    reg [7:0] top;
@@ -41,7 +41,7 @@ module test;
 
    initial top = 4;
 
-   cntClk cntIClk(clk);
+   cnt_sim_clk cntIClk(clk);
    cnt #(.width(8)) cntI(clk, top, cnt, i);
 
    initial begin
@@ -50,4 +50,4 @@ module test;
       $monitor("T=%t, clk=%d cnt=%d i=%0d", $time, clk, cnt, i);
       #70 $finish;
    end
-endmodule // test
+endmodule

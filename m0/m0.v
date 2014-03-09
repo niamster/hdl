@@ -26,7 +26,7 @@ module m0(clk, key, rstn, leds);
       else
         leds <= r0;
    end
-endmodule // m0
+endmodule
 
 module m0_de0nano(sys_clk, key, rstn, leds);
    input sys_clk;
@@ -35,9 +35,9 @@ module m0_de0nano(sys_clk, key, rstn, leds);
    output [7:0] leds;
 
    m0 #(.width(8)) m0I(sys_clk, key, rstn, leds);
-endmodule // m0_de0nano
+endmodule
 
-module m0mock(leds, key, rstn);
+module m0_mock(leds, key, rstn);
    parameter width = 8;
 
    input [width-1:0] leds;
@@ -53,9 +53,9 @@ module m0mock(leds, key, rstn);
    end
    initial #30 rstn = 0;
    initial #50 rstn = 1;
-endmodule // m0mock
+endmodule
 
-module m0Clk(clk);
+module m0_sim_clk(clk);
    output reg clk;
 
    initial begin
@@ -64,17 +64,17 @@ module m0Clk(clk);
          clk = #1 !clk;
       end
    end
-endmodule // m0Clk
+endmodule
 
-module test;
+module m0_sim;
    wire [7:0] leds;
    wire key;
    wire clk;
    wire rstn;
 
-   m0Clk m0IClk(clk);
+   m0_sim_clk m0IClk(clk);
    m0 #(.width(8)) m0I(clk, key, rstn, leds);
-   m0mock #(.width(8)) m0mockI(leds, key, rstn);
+   m0_mock #(.width(8)) m0_mockI(leds, key, rstn);
 
    initial begin
       $dumpfile("m0.vcd");
@@ -82,4 +82,4 @@ module test;
       $monitor("T=%t, clk=%d key=%d rstn=%0d leds=%0d", $time, clk, key, rstn, leds);
       #70 $finish;
    end
-endmodule // test
+endmodule
