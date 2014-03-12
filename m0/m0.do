@@ -2,7 +2,7 @@
 
 {
   name: :m0,
-  target: {family: 'Cyclone IV E', device: 'EP4CE22F17C6'},
+  target: {family: 'Cyclone IV E', device: 'EP4CE22F17C6', eprom: 'EPCS64'},
   top: 'm0_de0nano',
   pins: {
     sys_clk: {pad: 'R8', voltage: "3.3-V LVTTL",},
