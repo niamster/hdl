@@ -21,5 +21,6 @@
           ]
   },
   sdc: '../boards/de0-nano.sdc',
-  files: ['*.v', '../cnt/cnt.v'],
+  files: ['*.v'],
+  include: [:cnt],
 }
