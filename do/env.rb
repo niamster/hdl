@@ -77,6 +77,18 @@ class Env
   end
   private :get_project
 
+  def resolve_files
+    @projects.each do |n, p|
+      p.files = Utils.expand(p.root, p.meta[:files])
+      next unless p.meta[:include]
+      p.meta[:include].each do |i|
+        Utils.die {puts "Project #{i} is not defined(needed for project #{n}"} unless @projects[i]
+        p.files += Utils.expand(@projects[i].root, @projects[i].meta[:files])
+      end
+    end
+  end
+  private :resolve_files
+
   def initialize(args)
     @options = OpenStruct.new
 
@@ -114,6 +126,7 @@ class Env
     parser.parse!(args)
 
     find_projects
+    resolve_files
 
     parser.usage unless args.length == 1
     project, *target = args[0].split '/'

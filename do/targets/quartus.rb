@@ -4,7 +4,7 @@ class QuartusBuild < Target
   def initialize(env, project)
     super(env, project, 'qbuild')
 
-    @files = Utils.expand(@project.root, @project.meta[:files])
+    @files = @project.files
     @requires = @files
 
     @qsf = project_file(".qsf")

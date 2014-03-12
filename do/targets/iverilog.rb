@@ -5,7 +5,7 @@ class IverilogSim < Target
   def initialize(env, project)
     super(env, project, 'isim')
 
-    @files = Utils.expand(@project.root, @project.meta[:files])
+    @files = @project.files
     @requires = @files
 
     @vvp = project_file(".vvp")
