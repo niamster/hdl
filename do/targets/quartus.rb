@@ -83,7 +83,55 @@ class QuartusBlast < Target
   end
 end
 
+class QuartusJic < Target
+  def initialize(env, project)
+    super(env, project, 'qjic')
+
+    @sof = project_file(".sof")
+    @requires = [@sof]
+
+    @jic = project_file(".jic")
+    @opt = project_file(".opt")
+    @provides = [@jic, @opt]
+
+    @eprom = @project.meta[:target][:eprom]
+    raise if not @eprom
+    @flash_loader = @project.meta[:target][:device][0..6]
+
+    @implicit = true
+  end
+
+  def do(what)
+    File.open(@opt, "w+") do |opt|
+      opt.puts("compression=on")
+    end
+
+    Utils.run("quartus_cpf",
+        param=["-c", "-o", @opt, "-d", @eprom, "-s", @flash_loader, @sof, @jic],
+        pwd: @build_root, silent: @silent)
+  end
+end
+
+class QuartusFlash < Target
+  def initialize(env, project)
+    super(env, project, 'qflash')
+
+    @jic = project_file(".jic")
+    @requires = [@jic]
+
+    @provides = nil
+  end
+
+  def do(what)
+    Utils.run("quartus_pgm",
+        param=["-c", "USB-Blaster", "-m", "JTAG", "-o", "pvbi;#{@jic}"],
+        pwd: @build_root, silent: @silent)
+  end
+end
+
 def init
   yield QuartusBuild
   yield QuartusBlast
+  yield QuartusJic
+  yield QuartusFlash
 end
