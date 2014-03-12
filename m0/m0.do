@@ -1,4 +1,7 @@
+# -*-ruby-*-
+
 {
+  name: :m0,
   target: {family: 'Cyclone IV E', device: 'EP4CE22F17C6'},
   top: 'm0_de0nano',
   pins: {

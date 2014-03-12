@@ -2,17 +2,17 @@ require 'pp'
 require 'pathname'
 
 class IverilogSim < Target
-  def initialize(options)
-    super(options, 'isim')
+  def initialize(env, project)
+    super(env, project, 'isim')
 
-    @files = Utils.expand(@options.path, @options.meta[:files])
+    @files = Utils.expand(@project.root, @project.meta[:files])
     @requires = @files
 
     @vvp = project_file(".vvp")
     @vcd = project_file(".vcd")
     @provides = [@vvp, @vcd]
 
-    @sim = @options.meta[:sim]
+    @sim = @project.meta[:sim]
   end
 
   def do(what)
@@ -27,6 +27,6 @@ class IverilogSim < Target
   end
 end
 
-def iverilog_init(options, targets)
-  targets.push(IverilogSim.new options)
+def init
+  yield IverilogSim
 end

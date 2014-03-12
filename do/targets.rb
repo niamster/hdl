@@ -6,46 +6,34 @@ require_relative 'utils'
 
 class Target
   attr_reader :name
+  attr_reader :project
   attr_reader :provides
   attr_reader :requires
   attr_reader :implicit
 
-  def initialize(options, name)
+  def initialize(env, project, name)
+    @env = env
+    @project = project
     @name = name
-    @options = options
     @requires = []
     @provides = []
-    @build_root = @options.build_root
-    @silent = @options.silent
+    @build_root = @env.build_root
+    @silent = @env.options.silent
   end
 
   def project_file(ext)
-    @options.build_root.join(@options.project+ext)
+    @build_root.join(@project.name.to_s+ext)
   end
 end
 
 class Targets
   attr_reader :targets
 
-  def load(path)
-    Utils.require_dir(path) do |file|
-      name = file.chomp('.rb')
-      send("#{name}_init", @options, @targets)
-    end
-  end
-  private :load
-
-  def print(prefix='')
-    @targets.each {|t| puts "#{prefix}#{t.name}" if not t.implicit}
-  end
-
-  def initialize(options)
-    @options = options
-
+  def initialize(env)
+    @env = env
     @targets = Array.new
 
-    load(@options.do_root.join('do', 'targets'))
-    load(@options.path.join('targets'))
+    load(@env.root.join('do', 'targets'))
 
     products = {}
     @targets.each do |t|
@@ -61,10 +49,45 @@ class Targets
     end
   end
 
+  def load(path)
+    Utils.require_dir(path) do |file|
+      send("init") do |t|
+        @env.projects.each do |n, p|
+          begin
+            @targets.push(t.new(@env, p))
+          rescue Exception => e
+            if not @env.options.silent
+              # puts e.message
+              # puts e.backtrace
+            end
+          end
+        end
+      end
+    end
+  end
+  private :load
+
+  def print(prefix='')
+    @targets.each do |t|
+      next if t.implicit
+      next unless @env.project == t.project
+      puts "#{prefix}#{t.name}"
+    end
+  end
+
+  def find(target)
+    @targets.each do |t|
+      if t.name == target and t.project == @env.project
+        return t
+      end
+    end
+    return nil
+  end
+
   def dirs(path)
     dir, base = path.split
     if not dir.directory?
-      puts "Creating #{dir}" unless @options.silent
+      puts "Creating #{dir}" unless @env.options.silent
       FileUtils.makedirs(dir)
     end
   end
@@ -78,7 +101,7 @@ class Targets
     return unless requires
 
     requires.each do |r|
-      next if r.exist? and not @options.force
+      next if r.exist? and not @env.options.force
       dirs(r)
       @targets.each do |t|
         next if t == target

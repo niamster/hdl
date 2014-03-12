@@ -1,21 +1,21 @@
 require 'pp'
 
 class QuartusBuild < Target
-  def initialize(options)
-    super(options, 'qbuild')
+  def initialize(env, project)
+    super(env, project, 'qbuild')
 
-    @files = Utils.expand(@options.path, @options.meta[:files])
+    @files = Utils.expand(@project.root, @project.meta[:files])
     @requires = @files
 
     @qsf = project_file(".qsf")
     @sof = project_file(".sof")
-    @sdc = @options.path.join(@options.meta[:sdc]).realpath
+    @sdc = @project.root.join(@project.meta[:sdc]).realpath
 
     @provides = [@qsf, @sof]
 
-    @top = @options.meta[:top]
-    @family = @options.meta[:target][:family]
-    @device = @options.meta[:target][:device]
+    @top = @project.meta[:top]
+    @family = @project.meta[:target][:family]
+    @device = @project.meta[:target][:device]
   end
 
   def do_pin(file, pin, entity)
@@ -44,8 +44,8 @@ class QuartusBuild < Target
       @files.each do |f|
         qsf.puts("set_global_assignment -name VERILOG_FILE #{f}")
       end
-      if @options.meta[:pins]
-        @options.meta[:pins].each do |entity, pin|
+      if @project.meta[:pins]
+        @project.meta[:pins].each do |entity, pin|
           if pin.kind_of? Array
             i = 0
             pin.each do |p|
@@ -67,8 +67,8 @@ class QuartusBuild < Target
 end
 
 class QuartusBlast < Target
-  def initialize(options)
-    super(options, 'qblast')
+  def initialize(env, project)
+    super(env, project, 'qblast')
 
     @sof = project_file(".sof")
     @requires = [@sof]
@@ -83,19 +83,7 @@ class QuartusBlast < Target
   end
 end
 
-def quartus_init(options, targets)
-  begin
-    targets.push(QuartusBuild.new options)
-  rescue Exception => e
-    puts "Failed to load qbuild target"
-    # puts e.message
-    # puts e.backtrace.inspect
-  end
-  begin
-    targets.push(QuartusBlast.new options)
-  rescue Exception => e
-    puts "Failed to load qblast target"
-    # puts e.message
-    # puts e.backtrace.inspect
-  end
+def init
+  yield QuartusBuild
+  yield QuartusBlast
 end

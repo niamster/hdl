@@ -1,4 +1,7 @@
+# -*-ruby-*-
+
 {
+  name: :m1,
   target: {family: 'Cyclone IV E', device: 'EP4CE22F17C6'},
   top: 'm1_de0nano',
   sim: 'm1_sim',

@@ -3,8 +3,8 @@ require 'pathname'
 require 'fileutils'
 
 class BuildClean < Target
-  def initialize(options)
-    super(options, 'clean')
+  def initialize(env, project)
+    super(env, project, 'clean')
     @requires = nil
     @provides = nil
   end
@@ -16,6 +16,6 @@ class BuildClean < Target
   end
 end
 
-def build_init(options, targets)
-  targets.push(BuildClean.new options)
+def init
+  yield BuildClean
 end

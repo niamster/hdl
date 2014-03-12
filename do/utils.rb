@@ -42,4 +42,9 @@ module Utils
     end
     out
   end
+
+  def self.die
+    yield if block_given?
+    exit 1
+  end
 end

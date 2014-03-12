@@ -1,8 +1,8 @@
 require 'pp'
 
 class Gtkwave < Target
-  def initialize(options)
-    super(options, 'gwave')
+  def initialize(env, project)
+    super(env, project, 'gwave')
     @vcd = project_file(".vcd")
     @requires = [@vcd]
     @provides = nil
@@ -15,6 +15,6 @@ class Gtkwave < Target
   end
 end
 
-def gtkwave_init(options, targets)
-  targets.push(Gtkwave.new options)
+def init
+  yield Gtkwave
 end
