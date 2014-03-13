@@ -28,7 +28,11 @@ module Utils
     pid = Process.spawn(cmd, *argv,
                         chdir: opts[:pwd].to_s,
                         out: out, err: out)
-    Process.wait2 pid
+    r = Process.wait2 pid
+    if $?.exitstatus != 0
+      puts "Command '#{cmd} #{args.join(' ')}' failed to execute"
+      exit $?.exitstatus
+    end
   end
 
   def self.expand(path, files)
