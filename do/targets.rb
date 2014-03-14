@@ -10,6 +10,7 @@ class Target
   attr_reader :provides
   attr_reader :requires
   attr_reader :implicit
+  attr_reader :files
 
   def initialize(env, project, name)
     @env = env
@@ -101,12 +102,22 @@ class Targets
     return unless requires
 
     requires.each do |r|
-      next if r.exist? and not @env.options.force
       dirs(r)
       @targets.each do |t|
         next if t == target
         next unless t.provides
         next unless t.provides.include?(r)
+        if r.exist? and not @env.options.force and t.files
+          mtime = File.new(r).mtime
+          tainted = false
+          t.files.each do |f|
+            if File.new(f).mtime > mtime
+              tainted = true
+              break
+            end
+          end
+          next unless tainted
+        end
         resolve(t)
         t.do(r)
         break
