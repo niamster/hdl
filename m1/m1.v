@@ -17,13 +17,12 @@ module m1_de0nano(sys_clk, leds);
    input sys_clk;
    output [7:0] leds;
 
-   wire [31:0] top;
-   wire [31:0] cnt;
-   wire i;
+   wire clk;
+   wire rstn;
 
-   assign top = 50000000;
+   assign rstn = 1;
 
-   cnt #(.width(32)) m1CntI(sys_clk, top, cnt, i);
+   clkdiv #(50000000) clkDivI(rstn, sys_clk, clk);
    m1 #(.width(8)) m1I(i, leds);
 endmodule
 
@@ -39,23 +38,25 @@ module m1_sim_clk(clk);
 endmodule
 
 module m1_sim;
-   wire clk;
+   wire sys_clk;
    wire [7:0] leds;
+   reg rstn;
 
-   wire [31:0] top;
-   wire [31:0] cnt;
-   wire i;
+   wire clk;
 
-   assign top = 50;
+   initial begin
+      rstn = 0;
+      #1 rstn = 1;
+   end
 
-   m1_sim_clk m1IClk(clk);
-   cnt #(.width(32)) m1CntI(clk, top, cnt, i);
-   m1 #(.width(8)) m1I(i, leds);
+   m1_sim_clk m1IClk(sys_clk);
+   clkdiv #(50) clkDivI(rstn, sys_clk, clk);
+   m1 #(.width(8)) m1I(clk, leds);
 
    initial begin
       $dumpfile("m1.vcd");
       $dumpvars();
-      $monitor("T=%t, i=%0d", $time, i);
+      $monitor("T=%t, i=%0d", $time, clk);
       #1000 $finish;
    end
 endmodule
