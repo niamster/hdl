@@ -22,8 +22,8 @@ module m1_de0nano(sys_clk, leds);
 
    assign rstn = 1;
 
-   clkdiv #(50000000) clkDivI(rstn, sys_clk, clk);
-   m1 #(.width(8)) m1I(i, leds);
+   clkdiv #(50000000) clkDiv(rstn, sys_clk, clk);
+   m1 #(.width(8)) m1I(clk, leds);
 endmodule
 
 module m1_sim_clk(clk);
@@ -39,18 +39,18 @@ endmodule
 
 module m1_sim;
    wire sys_clk;
-   wire [7:0] leds;
+   cnt_sim_clk simClk(sys_clk);
+
    reg rstn;
-
-   wire clk;
-
    initial begin
       rstn = 0;
       #1 rstn = 1;
    end
 
-   m1_sim_clk m1IClk(sys_clk);
-   clkdiv #(50) clkDivI(rstn, sys_clk, clk);
+   wire clk;
+   clkdiv #(50) clkDiv(rstn, sys_clk, clk);
+
+   wire [7:0] leds;
    m1 #(.width(8)) m1I(clk, leds);
 
    initial begin

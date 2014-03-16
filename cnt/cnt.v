@@ -19,34 +19,33 @@ module cnt
    wire [width-1:0] tgt;
    wire [width-1:0] inc;
 
-   reg [width-1:0] next;
-
    assign one = {{width-1{1'b0}}, 1'b1};
    assign zero = {width{1'b0}};
    assign load = (direction == `CNT_UP)?zero:top;
    assign tgt = (direction == `CNT_UP)?top:zero;
    assign inc = (direction == `CNT_UP)?one:-one;
 
-   always @(clk or rstn or rstn_it) begin
+   reg ovf;
+   reg reload;
+
+   always @(*) begin
+      if (~rstn || ~rstn_it)
+        it <= 1'b0;
+      else if (ovf)
+        it <= 1'b1;
+   end
+
+   always @(posedge clk, negedge rstn) begin
       if (~rstn) begin
-         next = load;
+         ovf <= 1'b0;
          cnt <= load;
-         it <= 0;
       end else begin
-         if (~rstn_it && !freerun)
-           next = load-inc; // on next posedge of the clk, next will be equal to load
-         else if (cnt == tgt && freerun)
-           next = load;
-         else if (clk)
-           next = next + inc;
-
-         if (clk)
-           cnt <= next;
-
-         if (next == tgt)
-           it <= 1'b1;
-         else if (~rstn_it)
-           it <= 1'b0;
+         cnt <= cnt + inc;
+         if (cnt == tgt) begin
+            ovf <= 1'b1;
+            cnt <= load;
+         end else
+           ovf <= 1'b0;
       end
    end
 endmodule
@@ -57,13 +56,14 @@ module clkdiv
     input iclk,
     output reg oclk);
 
+   wire [31:0] one;
    wire [31:0] top;
    wire [31:0] cnt;
 
    wire it;
+   wire rstn_it;
 
-   assign one = {{31{1'b0}}, 1'b1};
-   assign zero = {31{1'b0}};
+   assign one = {{30{1'b0}}, 1'b1};
    assign top = div-one;
    assign rstn_it = 0;
 
@@ -76,7 +76,7 @@ module clkdiv
       end
    end
 
-   cnt cntI0(iclk, top, rstn, rstn_it, cnt, it);
+   cnt cntI(iclk, top, rstn, rstn_it, cnt, it);
 endmodule
 
 module cnt_sim_clk(clk);
@@ -110,12 +110,12 @@ module cnt_sim;
             rstn_it[i] = 1;
             rstn[i] = 0;
          end
-         initial #2 rstn[i] = 1;
+         initial #4 rstn[i] = 1;
          initial #65 rstn[i] = 0;
 
          always @(posedge it[i]) begin
-           #1 rstn_it[i] = 1'b0;
-           #1 rstn_it[i] = 1'b1;
+           #4 rstn_it[i] = 1'b0;
+           #4 rstn_it[i] = 1'b1;
          end
       end
    endgenerate
