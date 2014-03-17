@@ -22,11 +22,9 @@ module m1_de0nano(sys_clk, rstn, rstn_it, leds);
   wire clk;
   wire [1:0] top;
 
-  assign top = 2'b11;
-
   clkdiv #(50000000) clkDiv(rstn, sys_clk, clk);
   m1 #(.width(4)) m1I(clk, rstn, leds[3:0]);
-  cnt #(.width(2),.freerun(0)) cntUpLocked(clk, top, rstn, rstn_it, leds[6:4], leds[7]);
+  cnt #(.width(2)) cntUpLocked(clk, 3, rstn, rstn_it, 1, leds[6:4], leds[7]);
 endmodule
 
 module m1_sim_clk(clk);
@@ -54,14 +52,11 @@ module m1_sim;
   clkdiv #(50) clkDiv(rstn, sys_clk, clk);
 
   wire [3:0] leds0;
-  wire [3:0] leds1;
+  wire [2:0] leds1;
   wire led3;
-  wire [1:0] top;
-  wire rstn_it;
-  assign top = 2'b11;
-  assign rstn_it = 1'b1;
+
   m1 #(.width(4)) m1I(clk, rstn, leds0);
-  cnt #(.width(3),.freerun(0)) cntUpLocked(clk, top, rstn, rstn_it, leds1, led3);
+  cnt #(.width(3)) cntUpLocked(clk, 3, rstn, 1, 0, leds1, led3);
 
   initial begin
     $dumpfile("m1.vcd");

@@ -3,12 +3,12 @@
 
 module cnt
   #(parameter width=32,
-    parameter direction=`CNT_UP,
-    parameter freerun=1)
+    parameter direction=`CNT_UP)
   (input clk,
    input [width-1:0] top,
    input rstn,
    input rstn_it,
+   input freerun,
 
    output reg [width-1:0] cnt,
    output reg it);
@@ -63,10 +63,10 @@ module clkdiv
 
   wire it;
   wire rstn_it;
+  wire freerun;
 
   assign one = {{30{1'b0}}, 1'b1};
   assign top = div-one;
-  assign rstn_it = 0;
 
   always @(posedge iclk or negedge rstn) begin
     if (~rstn)
@@ -77,7 +77,7 @@ module clkdiv
     end
   end
 
-  cnt cntI(iclk, top, rstn, rstn_it, cnt, it);
+  cnt cntI(iclk, top, rstn, 0, 1, cnt, it);
 endmodule
 
 module cnt_sim_clk(clk);
@@ -125,10 +125,10 @@ module cnt_sim;
   initial #50 top[1] = 5;
   initial #50 top[3] = 5;
 
-  cnt #(.width(8),.direction(`CNT_UP),.freerun(1)) cntUpFree(sys_clk, top[0], rstn[0], rstn_it[0], cnt[0], it[0]);
-  cnt #(.width(8),.direction(`CNT_UP),.freerun(0)) cntUpLocked(sys_clk, top[1], rstn[1], rstn_it[1], cnt[1], it[1]);
-  cnt #(.width(8),.direction(`CNT_DOWN),.freerun(1)) cntDownFree(sys_clk, top[2], rstn[2], rstn_it[2], cnt[2], it[2]);
-  cnt #(.width(8),.direction(`CNT_DOWN),.freerun(0)) cntDownLocked(sys_clk, top[3], rstn[3], rstn_it[3], cnt[3], it[3]);
+  cnt #(.width(8),.direction(`CNT_UP)) cntUpFree(sys_clk, top[0], rstn[0], rstn_it[0], 1, cnt[0], it[0]);
+  cnt #(.width(8),.direction(`CNT_UP)) cntUpLocked(sys_clk, top[1], rstn[1], rstn_it[1], 0, cnt[1], it[1]);
+  cnt #(.width(8),.direction(`CNT_DOWN)) cntDownFree(sys_clk, top[2], rstn[2], rstn_it[2], 1, cnt[2], it[2]);
+  cnt #(.width(8),.direction(`CNT_DOWN)) cntDownLocked(sys_clk, top[3], rstn[3], rstn_it[3], 0, cnt[3], it[3]);
 
   // ------------
 
