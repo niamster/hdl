@@ -7,8 +7,8 @@
   sim: 'm1_sim',
   pins: {
     sys_clk: {pad: 'R8', voltage: "3.3-V LVTTL",},
-    # key: {pad: 'J15', voltage: "3.3-V LVTTL",},
-    # rstn: {pad: 'E1', voltage: "3.3-V LVTTL",},
+    rstn: {pad: 'J15', voltage: "3.3-V LVTTL",},
+    rstn_it: {pad: 'E1', voltage: "3.3-V LVTTL",},
     leds: [
            {pad: 'A15', voltage: "3.3-V LVTTL", current: '4mA'},
            {pad: 'A13', voltage: "3.3-V LVTTL", current: '4mA'},

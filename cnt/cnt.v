@@ -40,7 +40,8 @@ module cnt
       ovf <= 1'b0;
       cnt <= load;
     end else begin
-      cnt <= cnt + inc;
+      if (freerun || ~it)
+        cnt <= cnt + inc;
       if (cnt == tgt) begin
         ovf <= 1'b1;
         cnt <= load;
