@@ -22,9 +22,15 @@ module m1_de0nano(sys_clk, rstn, rstn_it, leds);
   wire clk;
   wire [1:0] top;
 
-  clkdiv #(50000000) clkDiv(rstn, sys_clk, clk);
-  m1 #(.width(4)) m1I(clk, rstn, leds[3:0]);
-  cnt #(.width(2)) cntUpLocked(clk, 3, rstn, rstn_it, 1, leds[6:4], leds[7]);
+  clkdiv #(50000000) clkDiv(.rstn(rstn),
+                            .iclk(sys_clk), .oclk(clk));
+
+  m1 #(.width(4)) m1I(.clk(clk),
+                      .rstn(rstn), .leds(leds[3:0]));
+
+  cnt #(.width(2)) cntUp(.clk(clk),
+                               .top(3), .rstn(rstn), .clr_it(rstn_it), .start(1), .freerun(1),
+                               .cnt(leds[6:4]), .it(leds[7]));
 endmodule
 
 module m1_sim_clk(clk);
@@ -49,19 +55,19 @@ module m1_sim;
   end
 
   wire clk;
-  clkdiv #(50) clkDiv(rstn, sys_clk, clk);
+  clkdiv #(50) clkDiv(.rstn(rstn), .iclk(sys_clk), .oclk(clk));
 
   wire [3:0] leds0;
   wire [2:0] leds1;
   wire led3;
 
-  m1 #(.width(4)) m1I(clk, rstn, leds0);
-  cnt #(.width(3)) cntUpLocked(clk, 3, rstn, 1, 0, leds1, led3);
+  m1 #(.width(4)) m1I(.clk(clk), .rstn(rstn), .leds(leds0));
+  cnt #(.width(3)) cntUp(.clk(clk), .top(3), .rstn(rstn), .start(1), .freerun(1), .cnt(leds1), .it(led3));
 
   initial begin
     $dumpfile("m1.vcd");
     $dumpvars();
-    $monitor("T=%t, i=%0d", $time, clk);
-    #1000 $finish;
+    // $monitor("T=%t, i=%0d", $time, clk);
+    #2000 $finish;
   end
 endmodule

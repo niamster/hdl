@@ -7,7 +7,8 @@ module cnt
   (input clk,
    input [width-1:0] top,
    input rstn,
-   input rstn_it,
+   input clr_it,
+   input start,
    input freerun,
 
    output reg [width-1:0] cnt,
@@ -26,10 +27,10 @@ module cnt
   assign inc = (direction == `CNT_UP)?one:-one;
 
   reg ovf;
-  reg reload;
+  reg run;
 
   always @(*) begin
-    if (~rstn || ~rstn_it)
+    if (~rstn || ~clr_it)
       it <= 1'b0;
     else if (ovf)
       it <= 1'b1;
@@ -39,12 +40,17 @@ module cnt
     if (~rstn) begin
       ovf <= 1'b0;
       cnt <= load;
+      run <= 1'b0;
+    end else if (~run & start) begin
+      run <= 1'b1;
     end else begin
-      if (freerun || ~it)
+      if (run)
         cnt <= cnt + inc;
       if (cnt == tgt) begin
         ovf <= 1'b1;
         cnt <= load;
+        if (~freerun)
+          run <= 1'b0;
       end else
         ovf <= 1'b0;
     end
@@ -62,22 +68,24 @@ module clkdiv
   wire [31:0] cnt;
 
   wire it;
-  wire rstn_it;
-  wire freerun;
+  wire start;
 
   assign one = {{30{1'b0}}, 1'b1};
   assign top = div-one;
 
   always @(posedge iclk or negedge rstn) begin
     if (~rstn)
-      oclk <= 0;
+      oclk <= 1'b0;
     else begin
       if (cnt == top)
         oclk <= oclk + 1'b1;
     end
   end
 
-  cnt cntI(iclk, top, rstn, 0, 1, cnt, it);
+  pulse #(.dly(3), .len(2)) pulseI(.rstn(rstn), .clk(iclk), .pulse(start));
+  cnt cntI(.clk(iclk),
+           .top(top), .rstn(rstn), .start(start), .freerun(1),
+           .cnt(cnt), .it(it));
 endmodule
 
 module cnt_sim_clk(clk);
@@ -98,7 +106,8 @@ module cnt_sim;
   // ------------
 
   reg rstn[3:0];
-  reg rstn_it[3:0];
+  reg clr_it[3:0];
+  reg start[3:0];
   reg [7:0] top[3:0];
   wire it[3:0];
   wire [7:0] cnt[3:0];
@@ -108,15 +117,24 @@ module cnt_sim;
     for (i=0; i<4; i=i+1) begin :gen0
       initial begin
         top[i] = 4;
-        rstn_it[i] = 1;
+        clr_it[i] = 1;
         rstn[i] = 0;
+        start[i] = 1'b0;
       end
       initial #4 rstn[i] = 1;
       initial #65 rstn[i] = 0;
+      initial begin
+        #4 start[i] = 1'b1;
+        #2 start[i] = 1'b0;
+      end
 
       always @(posedge it[i]) begin
-        #4 rstn_it[i] = 1'b0;
-        #4 rstn_it[i] = 1'b1;
+        #4 clr_it[i] = 1'b0;
+        #4 clr_it[i] = 1'b1;
+      end
+      always @(posedge it[i]) begin
+        #6 start[i] = 1'b1;
+        #2 start[i] = 1'b0;
       end
     end
   endgenerate
@@ -125,10 +143,22 @@ module cnt_sim;
   initial #50 top[1] = 5;
   initial #50 top[3] = 5;
 
-  cnt #(.width(8),.direction(`CNT_UP)) cntUpFree(sys_clk, top[0], rstn[0], rstn_it[0], 1, cnt[0], it[0]);
-  cnt #(.width(8),.direction(`CNT_UP)) cntUpLocked(sys_clk, top[1], rstn[1], rstn_it[1], 0, cnt[1], it[1]);
-  cnt #(.width(8),.direction(`CNT_DOWN)) cntDownFree(sys_clk, top[2], rstn[2], rstn_it[2], 1, cnt[2], it[2]);
-  cnt #(.width(8),.direction(`CNT_DOWN)) cntDownLocked(sys_clk, top[3], rstn[3], rstn_it[3], 0, cnt[3], it[3]);
+  cnt #(.width(8),.direction(`CNT_UP)) cntUpFree(.clk(sys_clk),
+                                                 .top(top[0]), .rstn(rstn[0]),
+                                                 .clr_it(clr_it[0]), .start(start[0]), .freerun(1),
+                                                 .cnt(cnt[0]), .it(it[0]));
+  cnt #(.width(8),.direction(`CNT_UP)) cntUpLocked(.clk(sys_clk),
+                                                 .top(top[1]), .rstn(rstn[1]),
+                                                 .clr_it(clr_it[1]), .start(start[1]), .freerun(0),
+                                                 .cnt(cnt[1]), .it(it[1]));
+  cnt #(.width(8),.direction(`CNT_UP)) cntDownFree(.clk(sys_clk),
+                                                 .top(top[2]), .rstn(rstn[2]),
+                                                 .clr_it(clr_it[2]), .start(start[2]), .freerun(1),
+                                                 .cnt(cnt[2]), .it(it[2]));
+  cnt #(.width(8),.direction(`CNT_UP)) cntDownLocked(.clk(sys_clk),
+                                                 .top(top[3]), .rstn(rstn[3]),
+                                                 .clr_it(clr_it[3]), .start(start[3]), .freerun(0),
+                                                 .cnt(cnt[3]), .it(it[3]));
 
   // ------------
 
@@ -137,22 +167,22 @@ module cnt_sim;
 
   initial begin
     clkdiv_rstn = 0;
-    #1 clkdiv_rstn = 1;
+    #2 clkdiv_rstn = 1;
   end
 
-  clkdiv clkDiv(clkdiv_rstn, sys_clk, sys_clk_div_2);
+  clkdiv clkDiv(.rstn(clkdiv_rstn), .iclk(sys_clk), .oclk(sys_clk_div_2));
 
   // ------------
 
   initial begin
     $dumpfile("cnt.vcd");
     $dumpvars();
-    $monitor("T=%t, clk=%d cnt[0]=%d i[0]=%0d cnt[1]=%d i[1]=%0d cnt[2]=%d i[2]=%0d cnt[3]=%d i[3]=%0d",
-             $time, sys_clk,
-             cnt[0], it[0],
-             cnt[1], it[1],
-             cnt[2], it[2],
-             cnt[3], it[3]);
+    // $monitor("T=%t, clk=%d cnt[0]=%d i[0]=%0d cnt[1]=%d i[1]=%0d cnt[2]=%d i[2]=%0d cnt[3]=%d i[3]=%0d",
+    //          $time, sys_clk,
+    //          cnt[0], it[0],
+    //          cnt[1], it[1],
+    //          cnt[2], it[2],
+    //          cnt[3], it[3]);
     #70 $finish;
   end
 endmodule
