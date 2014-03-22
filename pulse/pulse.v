@@ -25,25 +25,55 @@ module pulse
   end
 endmodule
 
-module pulse_sim_clk(clk);
-  output reg clk;
+module pulse_interclk
+  (input rstn,
+   input iclk,
+   input oclk,
+   input ipulse,
+   output opulse);
+
+  reg pulse0, pulse1, pulse2;
+
+  assign opulse = pulse1 & ~pulse2;
+
+  always @(posedge iclk or negedge rstn) begin
+    if (~rstn)
+      pulse0 <= 1'b0;
+    else if (ipulse)
+      pulse0 <= 1'b1;
+  end
+
+  always @(posedge oclk or negedge rstn) begin
+    if (~rstn) begin
+      pulse1 <= 1'b0;
+      pulse2 <= 1'b0;
+    end else begin
+      pulse1 <= pulse0;
+      pulse2 <= pulse1;
+    end
+  end
+endmodule
+
+module pulse_sim_clk
+  #(parameter T=1)
+  (output reg clk);
 
   initial begin
     clk = 0;
     forever begin
-      clk = #1 !clk;
+      clk = #T !clk;
     end
   end
 endmodule
 
 module pulse_sim;
   wire sys_clk;
-  pulse_sim_clk simClk(sys_clk);
+  pulse_sim_clk sysClk(sys_clk);
 
   // ------------
 
   reg rstn;
-  wire p[6:0];
+  wire p[8:0];
 
   initial rstn = 0;
   initial #2 rstn = 1;
@@ -55,6 +85,32 @@ module pulse_sim;
   pulse #(.dly(0), .len(1))      pulseI3(.rstn(rstn), .clk(sys_clk), .pulse(p[3]));
   pulse #(.dly(1), .len(0))      pulseI4(.rstn(rstn), .clk(sys_clk), .pulse(p[4]));
   pulse #(.dly(0), .len(0))      pulseI5(.rstn(rstn), .clk(sys_clk), .pulse(p[5]));
+
+  // ------------
+
+  wire slow_clk;
+  pulse_sim_clk #(.T(4)) slowClk(slow_clk);
+  wire fast_clk;
+  assign fast_clk = sys_clk;
+
+  wire pi[1:0];
+  reg po[1:0];
+
+  always @(posedge fast_clk, negedge rstn) begin
+    if (~rstn)
+      po[0] <= 1'b0;
+    else
+      po[0] <= 1'b1;
+  end
+  always @(posedge slow_clk, negedge rstn) begin
+    if (~rstn)
+      po[1] <= 1'b0;
+    else
+      po[1] <= 1'b1;
+  end
+
+  pulse_interclk pinterI0(.rstn(rstn), .iclk(fast_clk), .oclk(slow_clk), .ipulse(po[0]), .opulse(pi[0]));
+  pulse_interclk pinterI1(.rstn(rstn), .iclk(slow_clk), .oclk(fast_clk), .ipulse(po[1]), .opulse(pi[1]));
 
   // ------------
 
