@@ -88,20 +88,9 @@ module clkdiv
            .cnt(cnt), .it(it));
 endmodule
 
-module cnt_sim_clk(clk);
-  output reg clk;
-
-  initial begin
-    clk = 0;
-    forever begin
-      clk = #1 !clk;
-    end
-  end
-endmodule
-
 module cnt_sim;
   wire sys_clk;
-  cnt_sim_clk simClk(sys_clk);
+  sim_clk simClk(sys_clk);
 
   // ------------
 
@@ -153,11 +142,11 @@ module cnt_sim;
                                                  .top(top[1]), .rstn(rstn[1]),
                                                  .clr_it(clr_it[1]), .start(start[1]), .freerun(0),
                                                  .cnt(cnt[1]), .it(it[1]));
-  cnt #(.width(8),.direction(`CNT_UP)) cntDownFree(.clk(sys_clk),
+  cnt #(.width(8),.direction(`CNT_DOWN)) cntDownFree(.clk(sys_clk),
                                                  .top(top[2]), .rstn(rstn[2]),
                                                  .clr_it(clr_it[2]), .start(start[2]), .freerun(1),
                                                  .cnt(cnt[2]), .it(it[2]));
-  cnt #(.width(8),.direction(`CNT_UP)) cntDownLocked(.clk(sys_clk),
+  cnt #(.width(8),.direction(`CNT_DOWN)) cntDownLocked(.clk(sys_clk),
                                                  .top(top[3]), .rstn(rstn[3]),
                                                  .clr_it(clr_it[3]), .start(start[3]), .freerun(0),
                                                  .cnt(cnt[3]), .it(it[3]));

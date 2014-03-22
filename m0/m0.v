@@ -55,24 +55,13 @@ module m0_mock(leds, key, rstn);
   initial #50 rstn = 1;
 endmodule
 
-module m0_sim_clk(clk);
-  output reg clk;
-
-  initial begin
-    clk = 0;
-    forever begin
-      clk = #1 !clk;
-    end
-  end
-endmodule
-
 module m0_sim;
   wire [7:0] leds;
   wire key;
   wire clk;
   wire rstn;
 
-  m0_sim_clk m0IClk(clk);
+  sim_clk m0IClk(clk);
   m0 #(.width(8)) m0I(clk, key, rstn, leds);
   m0_mock #(.width(8)) m0_mockI(leds, key, rstn);
 

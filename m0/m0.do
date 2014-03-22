@@ -22,4 +22,5 @@
   sdc: '../boards/de0-nano.sdc',
   # files: ['m0.v'],
   files: ['*.v'],
+  include: [:sim],
 }

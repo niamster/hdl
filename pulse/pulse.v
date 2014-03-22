@@ -54,21 +54,9 @@ module pulse_interclk
   end
 endmodule
 
-module pulse_sim_clk
-  #(parameter T=1)
-  (output reg clk);
-
-  initial begin
-    clk = 0;
-    forever begin
-      clk = #T !clk;
-    end
-  end
-endmodule
-
 module pulse_sim;
   wire sys_clk;
-  pulse_sim_clk sysClk(sys_clk);
+  sim_clk sysClk(sys_clk);
 
   // ------------
 
@@ -89,7 +77,7 @@ module pulse_sim;
   // ------------
 
   wire slow_clk;
-  pulse_sim_clk #(.T(4)) slowClk(slow_clk);
+  sim_clk #(.T(8)) slowClk(slow_clk);
   wire fast_clk;
   assign fast_clk = sys_clk;
 

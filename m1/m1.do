@@ -22,5 +22,5 @@
   },
   sdc: '../boards/de0-nano.sdc',
   files: ['*.v'],
-  include: [:cnt, :pulse],
+  include: [:cnt, :pulse, :sim],
 }

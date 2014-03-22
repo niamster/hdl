@@ -1,7 +1,6 @@
 # -*-ruby-*-
 
 {
-  name: :pulse,
+  name: :sim,
   files: ['*.v'],
-  include: [:sim],
 }

@@ -33,20 +33,9 @@ module m1_de0nano(sys_clk, rstn, rstn_it, leds);
                                .cnt(leds[6:4]), .it(leds[7]));
 endmodule
 
-module m1_sim_clk(clk);
-  output reg clk;
-
-  initial begin
-    clk = 0;
-    forever begin
-      clk = #1 !clk;
-    end
-  end
-endmodule
-
 module m1_sim;
   wire sys_clk;
-  cnt_sim_clk simClk(sys_clk);
+  sim_clk simClk(sys_clk);
 
   reg rstn;
   initial begin

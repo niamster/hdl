@@ -4,5 +4,5 @@
   name: :cnt,
   sim: 'cnt_sim',
   files: ['*.v'],
-  include: [:pulse],
+  include: [:pulse, :sim],
 }
