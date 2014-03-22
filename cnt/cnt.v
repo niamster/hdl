@@ -133,8 +133,10 @@ module cnt_sim;
         #4 clr_it[i] = 1'b1;
       end
       always @(posedge it[i]) begin
-        #6 start[i] = 1'b1;
-        #2 start[i] = 1'b0;
+        if (i&1) begin
+          #6 start[i] = 1'b1;
+          #2 start[i] = 1'b0;
+        end
       end
     end
   endgenerate
