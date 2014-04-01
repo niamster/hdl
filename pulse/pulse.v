@@ -1,10 +1,26 @@
+
 module pulse
   #(parameter dly=3,
-    parameter len=2,
-    parameter width=8)
+    parameter len=2)
   (input rstn,
    input clk,
    output reg pulse);
+
+`ifdef IVERILOG
+  localparam width = $clog2(dly+len);
+`else
+  function [31:0] log2;
+    input integer n;
+    integer i;
+    begin
+      for (i=0; n!=0; n=n>>1)
+        i = i + 1;
+      log2 = i;
+    end
+  endfunction
+
+  localparam width = log2(dly+len);
+`endif
 
   reg [width-1:0] cnt;
 
