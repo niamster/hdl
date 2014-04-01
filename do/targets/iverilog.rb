@@ -18,6 +18,7 @@ class IverilogSim < Target
   def do(what)
     extra = []
     extra += ['-s', @sim] if @sim
+    extra += ['-DIVERILOG']
     Utils.run("iverilog",
         param=['-o', @vvp] + extra + @files,
         pwd: @build_root, silent: @silent)
