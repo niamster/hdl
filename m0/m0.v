@@ -66,7 +66,7 @@ module m0_sim;
   m0_mock #(.width(8)) m0_mockI(leds, key, rstn);
 
   initial begin
-    $dumpfile("m0.vcd");
+    $dumpfile(`VCD_PATH);
     $dumpvars();
     $monitor("T=%t, clk=%d key=%d rstn=%0d leds=%0d", $time, clk, key, rstn, leds);
     #70 $finish;

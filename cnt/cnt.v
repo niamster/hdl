@@ -166,7 +166,7 @@ module cnt_sim;
   // ------------
 
   initial begin
-    $dumpfile("cnt.vcd");
+    $dumpfile(`VCD_PATH);
     $dumpvars();
     // $monitor("T=%t, clk=%d cnt[0]=%d i[0]=%0d cnt[1]=%d i[1]=%0d cnt[2]=%d i[2]=%0d cnt[3]=%d i[3]=%0d",
     //          $time, sys_clk,

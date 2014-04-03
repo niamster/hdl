@@ -54,7 +54,7 @@ module m1_sim;
   cnt #(.width(3)) cntUp(.clk(clk), .top(3), .rstn(rstn), .start(1), .freerun(1), .cnt(leds1), .it(led3));
 
   initial begin
-    $dumpfile("m1.vcd");
+    $dumpfile(`VCD_PATH);
     $dumpvars();
     // $monitor("T=%t, i=%0d", $time, clk);
     #2000 $finish;

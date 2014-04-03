@@ -70,7 +70,7 @@ module fifoctrl_sim;
   fifoctrl_sim_pp m1(slow_clk, sys_clk);
 
   initial begin
-    $dumpfile("fifo.vcd");
+    $dumpfile(`VCD_PATH);
     $dumpvars();
 
     #100 $finish;

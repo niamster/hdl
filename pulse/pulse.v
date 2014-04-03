@@ -105,7 +105,7 @@ module pulse_sim;
   // ------------
 
   initial begin
-    $dumpfile("pulse.vcd");
+    $dumpfile(`VCD_PATH);
     $dumpvars();
     // $monitor("T=%t, clk=%d p[0]=%d p[1]=%d p[2]=%d p[3]=%d",
     //          $time, sys_clk,
