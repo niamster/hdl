@@ -19,6 +19,7 @@ class IverilogSim < Target
     extra = []
     extra += ['-s', @sim] if @sim
     extra += ['-DIVERILOG']
+    extra += ["-DVCD_PATH=\"#{@vcd}\""]
     Utils.run("iverilog",
         param=['-o', @vvp] + extra + @files,
         pwd: @build_root, silent: @silent)
