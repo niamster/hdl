@@ -102,6 +102,18 @@ module pulse_sim;
   pulse_interclk pinterI0(.rstn(rstn), .iclk(fast_clk), .oclk(slow_clk), .ipulse(po[0]), .opulse(pi[0]));
   pulse_interclk pinterI1(.rstn(rstn), .iclk(slow_clk), .oclk(fast_clk), .ipulse(po[1]), .opulse(pi[1]));
 
+  wire op;
+  reg op_flag;
+  always @(posedge fast_clk, negedge rstn) begin
+    if (~rstn)
+      op_flag <= 1'b0;
+    else if (~op_flag)
+      op_flag <= 1'b1;
+    else if (op)
+      op_flag <= 1'b0;
+  end
+  pulse_interclk pinterI2(.rstn(op_flag), .iclk(fast_clk), .oclk(fast_clk), .ipulse(1), .opulse(op));
+
   // ------------
 
   initial begin
