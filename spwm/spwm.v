@@ -22,7 +22,8 @@ module spwm
   wire [cwidth-1:0] d0_next;
   wire [cwidth-1:0] d0_prev;
 
-  reg down;
+  reg up;
+  wire up_next;
 
   wire d1_level;
 
@@ -30,6 +31,7 @@ module spwm
   assign d0_next = d0 + d_delta;
   assign d0_prev = d0 - d_delta;
   assign d1_level = d0_level ^ 1'b1;
+  assign up_next = up ^ updown;
 
   cnt #(.width(cwidth)) cntD(.clk(clk),
                              .top(d_pwm), .rstn(rstn), .clr_it(clr_it), .start(1'b1), .freerun(1'b1),
@@ -41,7 +43,7 @@ module spwm
       io <= d0_level;
       d0 <= d_init;
       k_curr <= 0;
-      down <= 0;
+      up <= 1;
     end else begin
       if (d_curr == d0)
         io <= d1_level;
@@ -49,20 +51,17 @@ module spwm
       if (d_curr == d_pwm) begin
         io <= d0_level;
         if (k_curr == k_max) begin
-          if (updown) begin
-            down <= down ^ 1'b1;
-            if (down)
-              d0 <= d0_next;
-            else
-              d0 <= d0_prev;
-          end else
+          if (up_next)
             d0 <= d_init;
+          else
+            d0 <= d0_prev;
+          up <= up_next;
           k_curr <= 0;
         end else begin
-          if (down)
-            d0 <= d0_prev;
-          else
+          if (up)
             d0 <= d0_next;
+          else
+            d0 <= d0_prev;
           k_curr <= k_next;
         end
       end
