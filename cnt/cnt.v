@@ -29,14 +29,14 @@ module cnt
   reg ovf;
   reg run;
 
-  always @(*) begin
+  always @(posedge clk) begin
     if (~rstn || ~clr_it)
       it <= 1'b0;
     else if (ovf)
       it <= 1'b1;
   end
 
-  always @(posedge clk, negedge rstn) begin
+  always @(posedge clk) begin
     if (~rstn) begin
       ovf <= 1'b0;
       cnt <= load;
